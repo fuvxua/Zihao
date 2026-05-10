@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录/注册 - 我的论坛</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">我的论坛</a>
+      <ul class="nav-links" id="nav-links"></ul>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <div class="container">
+    <div class="auth-container">
+
+      <!-- 登录 -->
+      <div class="auth-box">
+        <h2>登录</h2>
+        <div class="msg msg-error" id="login-error"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label>邮箱</label>
+            <input type="email" id="login-email" required placeholder="请输入邮箱">
+          </div>
+          <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="login-password" required placeholder="请输入密码" minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">登录</button>
+        </form>
+      </div>
+
+      <!-- 注册 -->
+      <div class="auth-box">
+        <h2>注册</h2>
+        <div class="msg msg-error" id="register-error"></div>
+        <div class="msg msg-success" id="register-success"></div>
+        <form id="register-form">
+          <div class="form-group">
+            <label>昵称</label>
+            <input type="text" id="register-name" required placeholder="请输入昵称" maxlength="20">
+          </div>
+          <div class="form-group">
+            <label>邮箱</label>
+            <input type="email" id="register-email" required placeholder="请输入邮箱">
+          </div>
+          <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="register-password" required placeholder="请输入密码（至少6位）" minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">注册</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // 登录表单
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.style.display = 'none';
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        await login(email, password);
+        window.location.href = 'index.html';
+      } catch (err) {
+        errorDiv.textContent = '登录失败: ' + (err.message || '请检查邮箱和密码');
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // 注册表单
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const errorDiv = document.getElementById('register-error');
+      const successDiv = document.getElementById('register-success');
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      const name = document.getElementById('register-name').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+
+      try {
+        await register(email, password, name);
+        successDiv.textContent = '注册成功！请登录';
+        successDiv.style.display = 'block';
+        document.getElementById('register-form').reset();
+      } catch (err) {
+        errorDiv.textContent = '注册失败: ' + (err.message || '请检查输入');
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>

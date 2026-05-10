@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帖子详情 - 我的论坛</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">我的论坛</a>
+      <ul class="nav-links" id="nav-links"></ul>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <div class="container">
+    <!-- 帖子详情 -->
+    <div class="post-detail" id="post-detail">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <!-- 回复列表 -->
+    <div class="replies-section">
+      <h2>回复</h2>
+      <div id="replies-list">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 回复表单 -->
+    <div class="reply-form" id="reply-form-box">
+      <h2>发表回复</h2>
+      <div class="msg msg-error" id="reply-error"></div>
+      <form id="reply-form">
+        <div class="form-group">
+          <textarea id="reply-content" required placeholder="请输入回复内容" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">提交回复</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/posts.js"></script>
+  <script src="js/replies.js"></script>
+  <script>
+    let currentPostId = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 获取帖子 ID
+      const urlParams = new URLSearchParams(window.location.search);
+      currentPostId = urlParams.get('id');
+
+      if (!currentPostId) {
+        document.getElementById('post-detail').innerHTML = '<div class="empty-state"><p>帖子不存在</p><a href="index.html" class="btn btn-primary">返回首页</a></div>';
+        return;
+      }
+
+      // 加载帖子详情
+      const post = await loadPost(currentPostId);
+      const detailDiv = document.getElementById('post-detail');
+
+      if (!post) {
+        detailDiv.innerHTML = '<div class="empty-state"><p>帖子不存在或已被删除</p><a href="index.html" class="btn btn-primary">返回首页</a></div>';
+        document.getElementById('reply-form-box').style.display = 'none';
+        return;
+      }
+
+      // 检查是否是作者
+      const session = await checkAuth();
+      const isAuthor = session && session.user.id === post.author_id;
+
+      document.title = post.title + ' - 我的论坛';
+
+      detailDiv.innerHTML = `
+        <div class="post-header">
+          <h1>${escapeHtml(post.title)}</h1>
+          <div class="post-meta">
+            <span>作者: ${escapeHtml(post.author_name)}</span>
+            <span>发布时间: ${formatTime(post.created_at)}</span>
+          </div>
+        </div>
+        <div class="post-body">${escapeHtml(post.content)}</div>
+        ${isAuthor ? '<div class="post-actions"><button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
+      `;
+
+      // 加载回复
+      await loadReplies(currentPostId, 'replies-list');
+
+      // 未登录隐藏回复表单
+      if (!session) {
+        document.getElementById('reply-form-box').innerHTML = '<p style="text-align:center; color:#999;"><a href="login.html">登录</a>后可以发表回复</p>';
+      }
+    });
+
+    // 回复表单提交
+    document.getElementById('reply-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const errorDiv = document.getElementById('reply-error');
+      errorDiv.style.display = 'none';
+
+      const content = document.getElementById('reply-content').value.trim();
+      if (!content) {
+        errorDiv.textContent = '回复内容不能为空';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        await createReply(currentPostId, content);
+        document.getElementById('reply-content').value = '';
+        await loadReplies(currentPostId, 'replies-list');
+      } catch (err) {
+        errorDiv.textContent = '回复失败: ' + (err.message || '请重试');
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // 删除帖子
+    async function handleDeletePost() {
+      if (!confirm('确定要删除这篇帖子吗？删除后不可恢复。')) return;
+      try {
+        await deletePost(currentPostId);
+        window.location.href = 'index.html';
+      } catch (err) {
+        alert('删除失败: ' + err.message);
+      }
+    }
+  </script>
+
+</body>
+</html>
