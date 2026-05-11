@@ -24,13 +24,14 @@ async function loadReplies(postId, containerId) {
 
   const session = await checkAuth();
   const currentUserId = session?.user?.id;
+  const admin = await isAdmin();
 
   container.innerHTML = data.map(reply => `
     <div class="reply-item">
       <div class="reply-meta">
         <strong>${escapeHtml(reply.author_name)}</strong>
         <span>${formatTime(reply.created_at)}</span>
-        ${reply.author_id === currentUserId ? `<span class="reply-delete" onclick="handleDeleteReply(${reply.id}, ${postId})">删除</span>` : ''}
+        ${(reply.author_id === currentUserId || admin) ? `<span class="reply-delete" onclick="handleDeleteReply(${reply.id}, ${postId})">删除</span>` : ''}
       </div>
       <div class="reply-content">${escapeHtml(reply.content)}</div>
     </div>
@@ -58,17 +59,22 @@ async function createReply(postId, content) {
   return true;
 }
 
-// 删除回复
+// 删除回复（管理员可删除任意回复）
 async function deleteReply(replyId) {
   const session = await requireAuth();
   if (!session) return false;
 
-  const { error } = await supabaseClient
+  const admin = await isAdmin();
+  let query = supabaseClient
     .from('replies')
     .delete()
-    .eq('id', replyId)
-    .eq('author_id', session.user.id);
+    .eq('id', replyId);
 
+  if (!admin) {
+    query = query.eq('author_id', session.user.id);
+  }
+
+  const { error } = await query;
   if (error) {
     console.error('删除回复失败:', error);
     throw error;

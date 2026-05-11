@@ -76,17 +76,22 @@ async function createPost(title, content) {
   return true;
 }
 
-// 删除帖子
+// 删除帖子（管理员可删除任意帖子）
 async function deletePost(postId) {
   const session = await requireAuth();
   if (!session) return false;
 
-  const { error } = await supabaseClient
+  const admin = await isAdmin();
+  let query = supabaseClient
     .from('posts')
     .delete()
-    .eq('id', postId)
-    .eq('author_id', session.user.id);
+    .eq('id', postId);
 
+  if (!admin) {
+    query = query.eq('author_id', session.user.id);
+  }
+
+  const { error } = await query;
   if (error) {
     console.error('删除帖子失败:', error);
     throw error;

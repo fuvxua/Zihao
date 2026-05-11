@@ -54,6 +54,9 @@
     let currentPostId = null;
 
     document.addEventListener('DOMContentLoaded', async function() {
+      const session = await requireAuth();
+      if (!session) return;
+
       // 获取帖子 ID
       const urlParams = new URLSearchParams(window.location.search);
       currentPostId = urlParams.get('id');
@@ -73,9 +76,11 @@
         return;
       }
 
-      // 检查是否是作者
+      // 检查是否是作者或管理员
       const session = await checkAuth();
       const isAuthor = session && session.user.id === post.author_id;
+      const admin = await isAdmin();
+      const canDelete = isAuthor || admin;
 
       document.title = post.title + ' - 我的论坛';
 
@@ -88,7 +93,7 @@
           </div>
         </div>
         <div class="post-body">${escapeHtml(post.content)}</div>
-        ${isAuthor ? '<div class="post-actions"><button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
+        ${canDelete ? '<div class="post-actions"><button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
       `;
 
       // 加载回复
