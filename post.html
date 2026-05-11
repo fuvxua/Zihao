@@ -87,21 +87,16 @@
         <div class="post-header">
           <h1>${escapeHtml(post.title)}</h1>
           <div class="post-meta">
-            <span>作者: ${escapeHtml(post.author_name)}</span>
+            <span class="post-author">${renderUserAvatar(post.author_name, post.avatar_url, 24)} ${escapeHtml(post.author_name)}</span>
             <span>发布时间: ${formatTime(post.created_at)}</span>
           </div>
         </div>
-        <div class="post-body">${escapeHtml(post.content)}</div>
-        ${canDelete ? '<div class="post-actions"><button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
+        <div class="post-body">${renderPostContent(post.content)}</div>
+        ${canDelete ? '<div class="post-actions"><button class="btn btn-primary btn-sm" onclick="handleEditPost()">编辑</button> <button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
       `;
 
       // 加载回复
       await loadReplies(currentPostId, 'replies-list');
-
-      // 未登录隐藏回复表单
-      if (!session) {
-        document.getElementById('reply-form-box').innerHTML = '<p style="text-align:center; color:#999;"><a href="login.html">登录</a>后可以发表回复</p>';
-      }
     });
 
     // 回复表单提交
@@ -135,6 +130,49 @@
         window.location.href = 'index.html';
       } catch (err) {
         alert('删除失败: ' + err.message);
+      }
+    }
+
+    // 编辑帖子
+    async function handleEditPost() {
+      const post = await loadPost(currentPostId);
+      if (!post) return;
+
+      const detailDiv = document.getElementById('post-detail');
+      detailDiv.innerHTML = `
+        <div class="edit-form">
+          <h3>编辑帖子</h3>
+          <div class="form-group">
+            <label>标题</label>
+            <input type="text" id="edit-title" value="${escapeHtml(post.title)}" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>内容</label>
+            <textarea id="edit-content" rows="10">${escapeHtml(post.content)}</textarea>
+          </div>
+          <div class="edit-actions">
+            <button class="btn btn-primary btn-sm" onclick="handleSaveEdit()">保存</button>
+            <button class="btn btn-sm" style="background:#eee;color:#333;margin-left:8px;" onclick="location.reload()">取消</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 保存编辑
+    async function handleSaveEdit() {
+      const title = document.getElementById('edit-title').value.trim();
+      const content = document.getElementById('edit-content').value.trim();
+
+      if (!title || !content) {
+        alert('标题和内容不能为空');
+        return;
+      }
+
+      try {
+        await updatePost(currentPostId, title, content);
+        location.reload();
+      } catch (err) {
+        alert('保存失败: ' + err.message);
       }
     }
   </script>

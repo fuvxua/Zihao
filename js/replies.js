@@ -29,6 +29,7 @@ async function loadReplies(postId, containerId) {
   container.innerHTML = data.map(reply => `
     <div class="reply-item">
       <div class="reply-meta">
+        ${renderUserAvatar(reply.author_name, reply.avatar_url, 24)}
         <strong>${escapeHtml(reply.author_name)}</strong>
         <span>${formatTime(reply.created_at)}</span>
         ${(reply.author_id === currentUserId || admin) ? `<span class="reply-delete" onclick="handleDeleteReply(${reply.id}, ${postId})">删除</span>` : ''}
@@ -49,7 +50,8 @@ async function createReply(postId, content) {
       post_id: postId,
       content: content,
       author_id: session.user.id,
-      author_name: getUserName(session)
+      author_name: getUserName(session),
+      avatar_url: getAvatarUrl(session) || ''
     });
 
   if (error) {

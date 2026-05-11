@@ -30,6 +30,15 @@
           <label>内容</label>
           <textarea id="post-content" required placeholder="请输入帖子内容" rows="8"></textarea>
         </div>
+        <div class="form-group">
+          <label>图片（可选）</label>
+          <div class="image-upload-area" id="upload-area">
+            <p>点击或拖拽图片到此处上传</p>
+            <p style="font-size:12px; margin-top:4px;">支持 JPG、PNG、GIF、WebP，最大 5MB</p>
+            <input type="file" id="image-input" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="image-preview-list" id="image-preview"></div>
+        </div>
         <button type="submit" class="btn btn-primary">发布帖子</button>
         <a href="index.html" class="btn" style="background:#eee; color:#333; margin-left:12px;">取消</a>
       </form>
@@ -42,23 +51,88 @@
   <script src="js/auth.js"></script>
   <script src="js/posts.js"></script>
   <script>
+    const uploadedImages = [];
+
     // 需要登录
     document.addEventListener('DOMContentLoaded', async function() {
       const session = await requireAuth();
       if (!session) return;
 
+      const uploadArea = document.getElementById('upload-area');
+      const imageInput = document.getElementById('image-input');
+      const previewDiv = document.getElementById('image-preview');
+
+      // 点击上传
+      uploadArea.addEventListener('click', () => imageInput.click());
+
+      // 拖拽上传
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+      });
+
+      // 文件选择
+      imageInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+        imageInput.value = '';
+      });
+
+      async function handleFiles(files) {
+        for (const file of files) {
+          if (!file.type.startsWith('image/')) continue;
+          if (file.size > 5 * 1024 * 1024) {
+            alert('图片 ' + file.name + ' 超过 5MB 限制');
+            continue;
+          }
+
+          try {
+            uploadArea.querySelector('p').textContent = '上传中...';
+            const url = await uploadImage(file);
+            uploadedImages.push(url);
+
+            // 添加预览
+            const item = document.createElement('div');
+            item.className = 'image-preview-item';
+            item.innerHTML = `
+              <img src="${url}" alt="预览">
+              <button class="remove-image" onclick="removeImage(this, '${url}')">&times;</button>
+            `;
+            previewDiv.appendChild(item);
+
+            uploadArea.querySelector('p').textContent = '点击或拖拽图片到此处上传';
+          } catch (err) {
+            alert('上传失败: ' + err.message);
+            uploadArea.querySelector('p').textContent = '点击或拖拽图片到此处上传';
+          }
+        }
+      }
+
+      // 发帖
       document.getElementById('create-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const errorDiv = document.getElementById('create-error');
         errorDiv.style.display = 'none';
 
         const title = document.getElementById('post-title').value.trim();
-        const content = document.getElementById('post-content').value.trim();
+        let content = document.getElementById('post-content').value.trim();
 
         if (!title || !content) {
           errorDiv.textContent = '标题和内容不能为空';
           errorDiv.style.display = 'block';
           return;
+        }
+
+        // 将图片 URL 追加到内容末尾
+        if (uploadedImages.length > 0) {
+          content += '\n\n' + uploadedImages.map(url => '[img:' + url + ']').join('\n');
         }
 
         try {
@@ -70,6 +144,13 @@
         }
       });
     });
+
+    // 删除已上传图片
+    function removeImage(btn, url) {
+      const idx = uploadedImages.indexOf(url);
+      if (idx > -1) uploadedImages.splice(idx, 1);
+      btn.parentElement.remove();
+    }
   </script>
 
 </body>
