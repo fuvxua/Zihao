@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // ========== 代理地址（部署 Vercel 代理后填入） ==========
 // 如果不需要代理，设为 null
-const PROXY_URL = null; // 例如: 'https://你的项目.vercel.app/proxy'
+const PROXY_URL = 'https://old-salad-39d0supabase-proxy.2319866486zi.workers.dev';
 
 // 创建客户端（全局变量）
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
