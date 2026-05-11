@@ -1,176 +1,153 @@
-// ========== 帖子 CRUD ==========
+// ========== 帖子 CRUD（LeanCloud） ==========
 
 // 加载帖子列表
 async function loadPosts(containerId) {
-  const container = document.getElementById(containerId);
+  var container = document.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = '<div class="loading">加载中...</div>';
 
-  const { data, error } = await supabaseClient
-    .from('posts')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .range(0, 19);
+  try {
+    var query = new AV.Query('Post');
+    query.descending('createdAt');
+    query.limit(20);
+    var posts = await query.find();
 
-  if (error) {
+    if (!posts || posts.length === 0) {
+      container.innerHTML =
+        '<div class="empty-state">' +
+        '<p>还没有帖子，快来发第一贴吧！</p>' +
+        '<a href="create.html" class="btn btn-primary">发帖</a>' +
+        '</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < posts.length; i++) {
+      var post = posts[i];
+      var title = escapeHtml(post.get('title'));
+      var authorName = escapeHtml(post.get('authorName'));
+      var avatarUrl = post.get('avatarUrl') || '';
+      var time = formatTime(post.createdAt);
+      html +=
+        '<a href="post.html?id=' + post.id + '" class="post-card" style="text-decoration:none; color:inherit;">' +
+        '<div class="post-card-header">' +
+        renderUserAvatar(authorName, avatarUrl, 36) +
+        '<div class="post-card-info">' +
+        '<div class="post-title">' + title + '</div>' +
+        '<div class="post-meta">' +
+        '<span>' + authorName + '</span>' +
+        '<span>' + time + '</span>' +
+        '</div></div></div></a>';
+    }
+    container.innerHTML = html;
+  } catch (e) {
     container.innerHTML = '<div class="loading">加载失败，请刷新重试</div>';
-    console.error('加载帖子失败:', error);
-    return;
+    console.error('加载帖子失败:', e);
   }
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <p>还没有帖子，快来发第一贴吧！</p>
-        <a href="create.html" class="btn btn-primary">发帖</a>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = data.map(post => `
-    <a href="post.html?id=${post.id}" class="post-card" style="text-decoration:none; color:inherit;">
-      <div class="post-card-header">
-        ${renderUserAvatar(post.author_name, post.avatar_url, 36)}
-        <div class="post-card-info">
-          <div class="post-title">${escapeHtml(post.title)}</div>
-          <div class="post-meta">
-            <span>${escapeHtml(post.author_name)}</span>
-            <span>${formatTime(post.created_at)}</span>
-          </div>
-        </div>
-      </div>
-    </a>
-  `).join('');
 }
 
-// 加载单个帖子详情
+// 加载单个帖子
 async function loadPost(postId) {
-  const { data, error } = await supabaseClient
-    .from('posts')
-    .select('*')
-    .eq('id', postId)
-    .single();
-
-  if (error) {
-    console.error('加载帖子失败:', error);
+  try {
+    var query = new AV.Query('Post');
+    var post = await query.get(postId);
+    return post;
+  } catch (e) {
+    console.error('加载帖子失败:', e);
     return null;
   }
-  return data;
 }
 
 // 创建帖子
 async function createPost(title, content) {
-  const session = await requireAuth();
-  if (!session) return false;
+  var user = await requireAuth();
+  if (!user) return false;
 
-  const { error } = await supabaseClient
-    .from('posts')
-    .insert({
-      title: title,
-      content: content,
-      author_id: session.user.id,
-      author_name: getUserName(session),
-      avatar_url: getAvatarUrl(session) || ''
-    });
+  var Post = AV.Object.extend('Post');
+  var post = new Post();
+  post.set('title', title);
+  post.set('content', content);
+  post.set('authorId', user.id);
+  post.set('authorName', getUserName(user));
+  post.set('avatarUrl', getAvatarUrl(user) || '');
+  post.set('viewCount', 0);
+  post.set('replyCount', 0);
+  post.set('isPinned', false);
+  post.set('isLocked', false);
 
-  if (error) {
-    console.error('创建帖子失败:', error);
-    throw error;
-  }
+  await post.save();
   return true;
 }
 
-// 删除帖子（管理员可删除任意帖子）
-async function deletePost(postId) {
-  const session = await requireAuth();
-  if (!session) return false;
-
-  const admin = await isAdmin();
-  let query = supabaseClient
-    .from('posts')
-    .delete()
-    .eq('id', postId);
-
-  if (!admin) {
-    query = query.eq('author_id', session.user.id);
-  }
-
-  const { error } = await query;
-  if (error) {
-    console.error('删除帖子失败:', error);
-    throw error;
-  }
-  return true;
-}
-
-// 更新帖子（管理员可编辑任意帖子）
+// 更新帖子
 async function updatePost(postId, title, content) {
-  const session = await requireAuth();
-  if (!session) return false;
+  var user = await requireAuth();
+  if (!user) return false;
 
-  const admin = await isAdmin();
-  let query = supabaseClient
-    .from('posts')
-    .update({ title: title, content: content })
-    .eq('id', postId);
+  var post = await loadPost(postId);
+  if (!post) throw new Error('帖子不存在');
 
-  if (!admin) {
-    query = query.eq('author_id', session.user.id);
+  var admin = await isAdmin();
+  if (post.get('authorId') !== user.id && !admin) {
+    throw new Error('没有权限编辑');
   }
 
-  const { error } = await query;
-  if (error) {
-    console.error('更新帖子失败:', error);
-    throw error;
-  }
+  post.set('title', title);
+  post.set('content', content);
+  await post.save();
   return true;
 }
 
-// 上传图片到 Supabase Storage
-async function uploadImage(file) {
-  const session = await requireAuth();
-  if (!session) return null;
+// 删除帖子
+async function deletePost(postId) {
+  var user = await requireAuth();
+  if (!user) return false;
 
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+  var post = await loadPost(postId);
+  if (!post) throw new Error('帖子不存在');
 
-  const { data, error } = await supabaseClient.storage
-    .from('images')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
-
-  if (error) {
-    console.error('上传图片失败:', error);
-    throw error;
+  var admin = await isAdmin();
+  if (post.get('authorId') !== user.id && !admin) {
+    throw new Error('没有权限删除');
   }
 
-  const { data: urlData } = supabaseClient.storage
-    .from('images')
-    .getPublicUrl(data.path);
+  // 删除关联的回复
+  var replyQuery = new AV.Query('Reply');
+  replyQuery.equalTo('postId', postId);
+  var replies = await replyQuery.find();
+  if (replies.length > 0) {
+    await AV.Object.destroyAll(replies);
+  }
 
-  return getProxiedUrl(urlData.publicUrl);
+  await post.destroy();
+  return true;
 }
 
-// 安全渲染帖子内容（支持图片标签）
+// 上传图片
+async function uploadImage(file) {
+  var user = await requireAuth();
+  if (!user) return null;
+
+  var avFile = new AV.File('image-' + Date.now(), file);
+  await avFile.save();
+  return avFile.url();
+}
+
+// 安全渲染帖子内容（支持图片）
 function renderPostContent(content) {
-  // 允许 <img> 标签，其他内容转义
-  const div = document.createElement('div');
+  if (!content) return '';
+  var div = document.createElement('div');
   div.textContent = content;
-  let safeHtml = div.innerHTML;
-
-  // 还原合法的 img 标签: [img:url] -> <img>
+  var safeHtml = div.innerHTML;
   safeHtml = safeHtml.replace(/\[img:(https?:\/\/[^\]]+)\]/g, '<img src="$1" style="max-width:100%;border-radius:8px;margin:8px 0;">');
-
   return safeHtml;
 }
 
 // 格式化时间
-function formatTime(isoString) {
-  const date = new Date(isoString);
+function formatTime(date) {
+  if (!date) return '';
+  if (typeof date === 'string') date = new Date(date);
   return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -180,9 +157,10 @@ function formatTime(isoString) {
   });
 }
 
-// HTML 转义（防 XSS）
+// HTML 转义
 function escapeHtml(text) {
-  const div = document.createElement('div');
+  if (!text) return '';
+  var div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }

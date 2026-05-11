@@ -18,12 +18,10 @@
 
   <!-- 主内容 -->
   <div class="container">
-    <!-- 帖子详情 -->
     <div class="post-detail" id="post-detail">
       <div class="loading">加载中...</div>
     </div>
 
-    <!-- 回复列表 -->
     <div class="replies-section">
       <h2>回复</h2>
       <div id="replies-list">
@@ -31,7 +29,6 @@
       </div>
     </div>
 
-    <!-- 回复表单 -->
     <div class="reply-form" id="reply-form-box">
       <h2>发表回复</h2>
       <div class="msg msg-error" id="reply-error"></div>
@@ -45,20 +42,19 @@
   </div>
 
   <!-- JS -->
-  <script src="lib/supabase.min.js"></script>
-  <script src="js/supabase-client.js"></script>
+  <script src="lib/av-min.js"></script>
+  <script src="js/av-init.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/posts.js"></script>
   <script src="js/replies.js"></script>
   <script>
-    let currentPostId = null;
+    var currentPostId = null;
 
     document.addEventListener('DOMContentLoaded', async function() {
-      const session = await requireAuth();
-      if (!session) return;
+      var user = await requireAuth();
+      if (!user) return;
 
-      // 获取帖子 ID
-      const urlParams = new URLSearchParams(window.location.search);
+      var urlParams = new URLSearchParams(window.location.search);
       currentPostId = urlParams.get('id');
 
       if (!currentPostId) {
@@ -66,9 +62,8 @@
         return;
       }
 
-      // 加载帖子详情
-      const post = await loadPost(currentPostId);
-      const detailDiv = document.getElementById('post-detail');
+      var post = await loadPost(currentPostId);
+      var detailDiv = document.getElementById('post-detail');
 
       if (!post) {
         detailDiv.innerHTML = '<div class="empty-state"><p>帖子不存在或已被删除</p><a href="index.html" class="btn btn-primary">返回首页</a></div>';
@@ -76,36 +71,31 @@
         return;
       }
 
-      // 检查是否是作者或管理员
-      const isAuthor = session && session.user.id === post.author_id;
-      const admin = await isAdmin();
-      const canDelete = isAuthor || admin;
+      var isAuthor = user && user.id === post.get('authorId');
+      var admin = await isAdmin();
+      var canDelete = isAuthor || admin;
 
-      document.title = post.title + ' - 我的论坛';
+      document.title = post.get('title') + ' - 我的论坛';
 
-      detailDiv.innerHTML = `
-        <div class="post-header">
-          <h1>${escapeHtml(post.title)}</h1>
-          <div class="post-meta">
-            <span class="post-author">${renderUserAvatar(post.author_name, post.avatar_url, 24)} ${escapeHtml(post.author_name)}</span>
-            <span>发布时间: ${formatTime(post.created_at)}</span>
-          </div>
-        </div>
-        <div class="post-body">${renderPostContent(post.content)}</div>
-        ${canDelete ? '<div class="post-actions"><button class="btn btn-primary btn-sm" onclick="handleEditPost()">编辑</button> <button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : ''}
-      `;
+      detailDiv.innerHTML =
+        '<div class="post-header">' +
+        '<h1>' + escapeHtml(post.get('title')) + '</h1>' +
+        '<div class="post-meta">' +
+        '<span class="post-author">' + renderUserAvatar(post.get('authorName'), post.get('avatarUrl'), 24) + ' ' + escapeHtml(post.get('authorName')) + '</span>' +
+        '<span>发布时间: ' + formatTime(post.createdAt) + '</span>' +
+        '</div></div>' +
+        '<div class="post-body">' + renderPostContent(post.get('content')) + '</div>' +
+        (canDelete ? '<div class="post-actions"><button class="btn btn-primary btn-sm" onclick="handleEditPost()">编辑</button> <button class="btn btn-danger btn-sm" onclick="handleDeletePost()">删除帖子</button></div>' : '');
 
-      // 加载回复
       await loadReplies(currentPostId, 'replies-list');
     });
 
-    // 回复表单提交
     document.getElementById('reply-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const errorDiv = document.getElementById('reply-error');
+      var errorDiv = document.getElementById('reply-error');
       errorDiv.style.display = 'none';
 
-      const content = document.getElementById('reply-content').value.trim();
+      var content = document.getElementById('reply-content').value.trim();
       if (!content) {
         errorDiv.textContent = '回复内容不能为空';
         errorDiv.style.display = 'block';
@@ -122,9 +112,8 @@
       }
     });
 
-    // 删除帖子
     async function handleDeletePost() {
-      if (!confirm('确定要删除这篇帖子吗？删除后不可恢复。')) return;
+      if (!confirm('确定要删除这篇帖子吗？')) return;
       try {
         await deletePost(currentPostId);
         window.location.href = 'index.html';
@@ -133,35 +122,27 @@
       }
     }
 
-    // 编辑帖子
     async function handleEditPost() {
-      const post = await loadPost(currentPostId);
+      var post = await loadPost(currentPostId);
       if (!post) return;
 
-      const detailDiv = document.getElementById('post-detail');
-      detailDiv.innerHTML = `
-        <div class="edit-form">
-          <h3>编辑帖子</h3>
-          <div class="form-group">
-            <label>标题</label>
-            <input type="text" id="edit-title" value="${escapeHtml(post.title)}" maxlength="100">
-          </div>
-          <div class="form-group">
-            <label>内容</label>
-            <textarea id="edit-content" rows="10">${escapeHtml(post.content)}</textarea>
-          </div>
-          <div class="edit-actions">
-            <button class="btn btn-primary btn-sm" onclick="handleSaveEdit()">保存</button>
-            <button class="btn btn-sm" style="background:#eee;color:#333;margin-left:8px;" onclick="location.reload()">取消</button>
-          </div>
-        </div>
-      `;
+      var detailDiv = document.getElementById('post-detail');
+      detailDiv.innerHTML =
+        '<div class="edit-form">' +
+        '<h3>编辑帖子</h3>' +
+        '<div class="form-group"><label>标题</label>' +
+        '<input type="text" id="edit-title" value="' + escapeHtml(post.get('title')) + '" maxlength="100"></div>' +
+        '<div class="form-group"><label>内容</label>' +
+        '<textarea id="edit-content" rows="10">' + escapeHtml(post.get('content')) + '</textarea></div>' +
+        '<div class="edit-actions">' +
+        '<button class="btn btn-primary btn-sm" onclick="handleSaveEdit()">保存</button> ' +
+        '<button class="btn btn-sm" style="background:#eee;color:#333;margin-left:8px;" onclick="location.reload()">取消</button>' +
+        '</div></div>';
     }
 
-    // 保存编辑
     async function handleSaveEdit() {
-      const title = document.getElementById('edit-title').value.trim();
-      const content = document.getElementById('edit-content').value.trim();
+      var title = document.getElementById('edit-title').value.trim();
+      var content = document.getElementById('edit-content').value.trim();
 
       if (!title || !content) {
         alert('标题和内容不能为空');

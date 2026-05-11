@@ -1,204 +1,176 @@
-// ========== 认证逻辑 ==========
+// ========== 认证逻辑（LeanCloud） ==========
 
 // 注册
 async function register(email, password, displayName) {
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      data: { display_name: displayName }
-    }
-  });
-  if (error) throw error;
-  return data;
+  const user = new AV.User();
+  user.setUsername(email);
+  user.setPassword(password);
+  user.setEmail(email);
+  user.set('displayName', displayName);
+  await user.signUp();
+  return user;
 }
 
 // 登录
 async function login(email, password) {
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-  if (error) throw error;
-  return data;
+  const user = await AV.User.logIn(email, password);
+  return user;
 }
 
 // 登出
 async function logout() {
-  const { error } = await supabaseClient.auth.signOut();
-  if (error) throw error;
+  AV.User.logOut();
   window.location.href = 'login.html';
 }
 
-// 检查登录状态，返回 session（未登录返回 null）
+// 检查登录状态
 async function checkAuth() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  return session;
+  const user = AV.User.current();
+  return user;
 }
 
-// 需要登录的页面调用，未登录则跳转（支持 return URL）
+// 需要登录的页面调用
 async function requireAuth() {
-  const session = await checkAuth();
-  if (!session) {
+  const user = await checkAuth();
+  if (!user) {
     const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.href = 'login.html?return=' + returnUrl;
     return null;
   }
-  return session;
+  return user;
 }
 
 // 获取当前用户名
-function getUserName(session) {
-  if (!session || !session.user) return '匿名';
-  return session.user.user_metadata?.display_name || session.user.email;
+function getUserName(user) {
+  if (!user) return '匿名';
+  return user.get('displayName') || user.getUsername() || '匿名';
 }
 
-// 获取用户名首字母（用于头像）
-function getUserInitial(session) {
-  const name = getUserName(session);
+// 获取用户名首字母
+function getUserInitial(user) {
+  const name = getUserName(user);
   return name.charAt(0).toUpperCase();
 }
 
 // 获取用户头像 URL
-function getAvatarUrl(session) {
-  if (!session || !session.user) return null;
-  return session.user.user_metadata?.avatar_url || null;
+function getAvatarUrl(user) {
+  if (!user) return null;
+  return user.get('avatarUrl') || null;
 }
 
 // 上传头像
 async function uploadAvatar(file) {
-  const session = await requireAuth();
-  if (!session) return null;
+  const user = await requireAuth();
+  if (!user) return null;
 
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${session.user.id}/avatar.${fileExt}`;
+  const avFile = new AV.File('avatar-' + Date.now(), file);
+  await avFile.save();
 
-  const { data, error } = await supabaseClient.storage
-    .from('avatars')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: true
-    });
-
-  if (error) {
-    console.error('上传头像失败:', error);
-    throw error;
-  }
-
-  const { data: urlData } = supabaseClient.storage
-    .from('avatars')
-    .getPublicUrl(data.path);
-
-  const avatarUrl = getProxiedUrl(urlData.publicUrl) + '?t=' + Date.now();
-
-  // 更新用户 metadata
-  await supabaseClient.auth.updateUser({
-    data: { avatar_url: avatarUrl }
-  });
+  const avatarUrl = avFile.url();
+  user.set('avatarUrl', avatarUrl);
+  await user.save();
 
   return avatarUrl;
 }
 
-// 渲染头像 HTML（支持图片和首字母）
-function renderAvatar(session, size = 32) {
-  const avatarUrl = getAvatarUrl(session);
-  const initial = getUserInitial(session);
+// 渲染头像 HTML
+function renderAvatar(user, size) {
+  size = size || 32;
+  const avatarUrl = getAvatarUrl(user);
+  const initial = getUserInitial(user);
 
   if (avatarUrl) {
-    return `<img src="${avatarUrl}" class="avatar-img" style="width:${size}px;height:${size}px;" alt="头像">`;
+    return '<img src="' + avatarUrl + '" class="avatar-img" style="width:' + size + 'px;height:' + size + 'px;" alt="头像">';
   }
-  return `<span class="user-avatar" style="width:${size}px;height:${size}px;font-size:${size * 0.45}px;">${initial}</span>`;
+  return '<span class="user-avatar" style="width:' + size + 'px;height:' + size + 'px;font-size:' + (size * 0.45) + 'px;">' + initial + '</span>';
 }
 
-// 渲染任意用户头像（通过名称和 URL）
-function renderUserAvatar(name, avatarUrl, size = 32) {
+// 渲染任意用户头像
+function renderUserAvatar(name, avatarUrl, size) {
+  size = size || 32;
   if (avatarUrl) {
-    return `<img src="${avatarUrl}" class="avatar-img" style="width:${size}px;height:${size}px;" alt="头像">`;
+    return '<img src="' + avatarUrl + '" class="avatar-img" style="width:' + size + 'px;height:' + size + 'px;" alt="头像">';
   }
-  const initial = name ? name.charAt(0).toUpperCase() : '?';
-  return `<span class="user-avatar" style="width:${size}px;height:${size}px;font-size:${size * 0.45}px;">${initial}</span>`;
+  var initial = name ? name.charAt(0).toUpperCase() : '?';
+  return '<span class="user-avatar" style="width:' + size + 'px;height:' + size + 'px;font-size:' + (size * 0.45) + 'px;">' + initial + '</span>';
 }
 
-// 检查当前用户是否是管理员
+// 检查是否是管理员
 async function isAdmin() {
-  const session = await checkAuth();
-  if (!session) return false;
+  const user = await checkAuth();
+  if (!user) return false;
 
-  const { data } = await supabaseClient
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', session.user.id)
-    .eq('role', 'admin')
-    .maybeSingle();
+  const role = user.get('role');
+  if (role === 'admin') return true;
 
-  return !!data;
+  // 也检查 Role 表
+  try {
+    const query = new AV.Query(AV.Role);
+    query.equalTo('name', 'admin');
+    query.equalTo('users', user);
+    const roleObj = await query.first();
+    return !!roleObj;
+  } catch (e) {
+    return false;
+  }
 }
 
-// 获取当前用户的所有角色
+// 获取用户角色
 async function getUserRoles() {
-  const session = await checkAuth();
-  if (!session) return [];
-
-  const { data } = await supabaseClient
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', session.user.id);
-
-  return data ? data.map(r => r.role) : [];
+  const user = await checkAuth();
+  if (!user) return [];
+  const role = user.get('role');
+  return role ? [role] : ['user'];
 }
 
-// 更新导航栏显示
+// 更新导航栏
 async function updateNav() {
-  const session = await checkAuth();
+  const user = await checkAuth();
   const navLinks = document.getElementById('nav-links');
   if (!navLinks) return;
 
-  if (session) {
-    const name = getUserName(session);
+  if (user) {
+    const name = getUserName(user);
     const admin = await isAdmin();
-    const avatarHtml = renderAvatar(session, 28);
-    navLinks.innerHTML = `
-      <li><a href="index.html">首页</a></li>
-      <li><a href="create.html" class="btn-nav">发帖</a></li>
-      ${admin ? '<li><a href="admin.html" class="btn-nav btn-admin">管理</a></li>' : ''}
-      <li class="user-info" onclick="document.getElementById('avatar-input').click()" style="cursor:pointer;" title="点击更换头像">
-        ${avatarHtml}
-        ${name}
-        ${admin ? '<span class="admin-badge">管理员</span>' : ''}
-      </li>
-      <li><a href="#" onclick="logout(); return false;">退出</a></li>
-    `;
+    const avatarHtml = renderAvatar(user, 28);
+    navLinks.innerHTML =
+      '<li><a href="index.html">首页</a></li>' +
+      '<li><a href="create.html" class="btn-nav">发帖</a></li>' +
+      (admin ? '<li><a href="admin.html" class="btn-nav btn-admin">管理</a></li>' : '') +
+      '<li class="user-info" onclick="document.getElementById(\'avatar-input\').click()" style="cursor:pointer;" title="点击更换头像">' +
+      avatarHtml + ' ' + name +
+      (admin ? ' <span class="admin-badge">管理员</span>' : '') +
+      '</li>' +
+      '<li><a href="#" onclick="logout(); return false;">退出</a></li>';
 
-    // 添加隐藏的头像上传 input
+    // 头像上传
     if (!document.getElementById('avatar-input')) {
-      const input = document.createElement('input');
+      var input = document.createElement('input');
       input.type = 'file';
       input.id = 'avatar-input';
       input.accept = 'image/*';
       input.style.display = 'none';
-      input.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+      input.addEventListener('change', async function(e) {
+        var file = e.target.files[0];
         if (!file) return;
         if (file.size > 2 * 1024 * 1024) {
-          alert('头像图片不能超过 2MB');
+          alert('头像不能超过 2MB');
           return;
         }
         try {
           await uploadAvatar(file);
           location.reload();
         } catch (err) {
-          alert('上传头像失败: ' + err.message);
+          alert('上传失败: ' + err.message);
         }
       });
       document.body.appendChild(input);
     }
   } else {
-    navLinks.innerHTML = `
-      <li><a href="index.html">首页</a></li>
-      <li><a href="login.html" class="btn-nav">登录/注册</a></li>
-    `;
+    navLinks.innerHTML =
+      '<li><a href="index.html">首页</a></li>' +
+      '<li><a href="login.html" class="btn-nav">登录/注册</a></li>';
   }
 }
 
-// 页面加载时更新导航栏
 document.addEventListener('DOMContentLoaded', updateNav);

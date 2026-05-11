@@ -1,138 +1,129 @@
-// ========== 管理员 API ==========
+// ========== 管理员 API（LeanCloud） ==========
 
-// 加载所有帖子（管理员用，支持分页）
-async function adminLoadPosts(page = 1, pageSize = 20) {
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
+// 加载所有帖子
+async function adminLoadPosts(page) {
+  page = page || 1;
+  var pageSize = 20;
+  var skip = (page - 1) * pageSize;
 
-  const { data, error, count } = await supabaseClient
-    .from('posts')
-    .select('*', { count: 'exact' })
-    .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false })
-    .range(from, to);
+  var query = new AV.Query('Post');
+  query.descending('createdAt');
+  query.limit(pageSize);
+  query.skip(skip);
+  var posts = await query.find();
 
-  if (error) throw error;
-  return { data: data || [], count: count || 0 };
+  // 获取总数
+  var countQuery = new AV.Query('Post');
+  var total = await countQuery.count();
+
+  return { data: posts || [], count: total || 0 };
 }
 
 // 置顶/取消置顶
 async function togglePin(postId, currentStatus) {
-  const { error } = await supabaseClient
-    .from('posts')
-    .update({ is_pinned: !currentStatus })
-    .eq('id', postId);
-  if (error) throw error;
+  var post = await loadPost(postId);
+  if (!post) return;
+  post.set('isPinned', !currentStatus);
+  await post.save();
 }
 
 // 锁定/取消锁定
 async function toggleLock(postId, currentStatus) {
-  const { error } = await supabaseClient
-    .from('posts')
-    .update({ is_locked: !currentStatus })
-    .eq('id', postId);
-  if (error) throw error;
+  var post = await loadPost(postId);
+  if (!post) return;
+  post.set('isLocked', !currentStatus);
+  await post.save();
 }
 
-// 管理员删除帖子（不限作者）
+// 管理员删除帖子
 async function adminDeletePost(postId) {
-  // 先删回复
-  await supabaseClient.from('replies').delete().eq('post_id', postId);
-  // 再删帖子
-  const { error } = await supabaseClient
-    .from('posts')
-    .delete()
-    .eq('id', postId);
-  if (error) throw error;
+  var replyQuery = new AV.Query('Reply');
+  replyQuery.equalTo('postId', postId);
+  var replies = await replyQuery.find();
+  if (replies.length > 0) {
+    await AV.Object.destroyAll(replies);
+  }
+
+  var post = await loadPost(postId);
+  if (post) await post.destroy();
 }
 
-// 加载用户列表
+// 加载用户列表（从 _User 表）
 async function adminLoadUsers() {
-  const { data, error } = await supabaseClient
-    .from('user_list')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
+  var query = new AV.Query(AV.User);
+  query.descending('createdAt');
+  query.limit(100);
+  var users = await query.find();
+  return users || [];
 }
 
 // 设置用户角色
 async function setUserRole(userId, role) {
-  // 先删已有角色
-  await supabaseClient
-    .from('user_roles')
-    .delete()
-    .eq('user_id', userId);
-
-  // 再插入新角色（如果不是普通用户）
-  if (role !== 'user') {
-    const { error } = await supabaseClient
-      .from('user_roles')
-      .insert({ user_id: userId, role: role });
-    if (error) throw error;
-  }
+  var query = new AV.Query(AV.User);
+  var user = await query.get(userId);
+  if (!user) return;
+  user.set('role', role);
+  await user.save();
 }
 
 // 获取统计数据
 async function getStats() {
-  const [postsRes, usersRes, todayRes] = await Promise.all([
-    supabaseClient.from('posts').select('id', { count: 'exact', head: true }),
-    supabaseClient.from('user_list').select('id', { count: 'exact', head: true }),
-    supabaseClient.from('posts').select('id', { count: 'exact', head: true })
-      .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
-  ]);
+  var postQuery = new AV.Query('Post');
+  var totalPosts = await postQuery.count();
+
+  var userQuery = new AV.Query(AV.User);
+  var totalUsers = await userQuery.count();
+
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var todayQuery = new AV.Query('Post');
+  todayQuery.greaterThanOrEqualTo('createdAt', today);
+  var todayPosts = await todayQuery.count();
 
   return {
-    totalPosts: postsRes.count || 0,
-    totalUsers: usersRes.count || 0,
-    todayPosts: todayRes.count || 0
+    totalPosts: totalPosts || 0,
+    totalUsers: totalUsers || 0,
+    todayPosts: todayPosts || 0
   };
 }
 
-// 渲染管理员帖子表格
+// 渲染帖子表格
 function renderAdminPosts(posts, container) {
   if (!posts || posts.length === 0) {
     container.innerHTML = '<div class="loading">暂无帖子</div>';
     return;
   }
 
-  container.innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>标题</th>
-          <th>作者</th>
-          <th>回复</th>
-          <th>浏览</th>
-          <th>状态</th>
-          <th>发布时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${posts.map(post => `
-          <tr>
-            <td><a href="post.html?id=${post.id}">${escapeHtml(post.title)}</a></td>
-            <td>${escapeHtml(post.author_name)}</td>
-            <td>${post.reply_count || 0}</td>
-            <td>${post.view_count || 0}</td>
-            <td>
-              ${post.is_pinned ? '<span class="role-badge admin">置顶</span>' : ''}
-              ${post.is_locked ? '<span class="role-badge moderator">锁定</span>' : ''}
-              ${!post.is_pinned && !post.is_locked ? '<span class="role-badge user">正常</span>' : ''}
-            </td>
-            <td>${formatTime(post.created_at)}</td>
-            <td class="actions">
-              <button class="btn-action ${post.is_pinned ? 'active' : ''}" onclick="handleTogglePin('${post.id}', ${post.is_pinned})">置顶</button>
-              <button class="btn-action ${post.is_locked ? 'active' : ''}" onclick="handleToggleLock('${post.id}', ${post.is_locked})">锁定</button>
-              <button class="btn-action danger" onclick="handleAdminDeletePost('${post.id}')">删除</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+  var html =
+    '<table class="admin-table"><thead><tr>' +
+    '<th>标题</th><th>作者</th><th>回复</th><th>浏览</th><th>状态</th><th>发布时间</th><th>操作</th>' +
+    '</tr></thead><tbody>';
+
+  for (var i = 0; i < posts.length; i++) {
+    var post = posts[i];
+    var isPinned = post.get('isPinned');
+    var isLocked = post.get('isLocked');
+    var statusHtml = '';
+    if (isPinned) statusHtml += '<span class="role-badge admin">置顶</span> ';
+    if (isLocked) statusHtml += '<span class="role-badge moderator">锁定</span> ';
+    if (!isPinned && !isLocked) statusHtml = '<span class="role-badge user">正常</span>';
+
+    html +=
+      '<tr>' +
+      '<td><a href="post.html?id=' + post.id + '">' + escapeHtml(post.get('title')) + '</a></td>' +
+      '<td>' + escapeHtml(post.get('authorName')) + '</td>' +
+      '<td>' + (post.get('replyCount') || 0) + '</td>' +
+      '<td>' + (post.get('viewCount') || 0) + '</td>' +
+      '<td>' + statusHtml + '</td>' +
+      '<td>' + formatTime(post.createdAt) + '</td>' +
+      '<td class="actions">' +
+      '<button class="btn-action' + (isPinned ? ' active' : '') + '" onclick="handleTogglePin(\'' + post.id + '\',' + isPinned + ')">置顶</button> ' +
+      '<button class="btn-action' + (isLocked ? ' active' : '') + '" onclick="handleToggleLock(\'' + post.id + '\',' + isLocked + ')">锁定</button> ' +
+      '<button class="btn-action danger" onclick="handleAdminDeletePost(\'' + post.id + '\')">删除</button>' +
+      '</td></tr>';
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
 }
 
 // 渲染用户列表
@@ -142,39 +133,33 @@ function renderAdminUsers(users, container) {
     return;
   }
 
-  container.innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>昵称</th>
-          <th>邮箱</th>
-          <th>角色</th>
-          <th>注册时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${users.map(user => `
-          <tr>
-            <td>${escapeHtml(user.display_name || '未设置')}</td>
-            <td>${escapeHtml(user.email)}</td>
-            <td><span class="role-badge ${user.role}">${user.role === 'admin' ? '管理员' : user.role === 'moderator' ? '版主' : '用户'}</span></td>
-            <td>${formatTime(user.created_at)}</td>
-            <td class="actions">
-              <select onchange="handleSetRole('${user.id}', this.value)" style="padding:4px 8px; border:1px solid var(--border); border-radius:4px; font-size:12px;">
-                <option value="user" ${user.role === 'user' ? 'selected' : ''}>普通用户</option>
-                <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>版主</option>
-                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>管理员</option>
-              </select>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+  var html =
+    '<table class="admin-table"><thead><tr>' +
+    '<th>昵称</th><th>邮箱</th><th>角色</th><th>注册时间</th><th>操作</th>' +
+    '</tr></thead><tbody>';
+
+  for (var i = 0; i < users.length; i++) {
+    var user = users[i];
+    var role = user.get('role') || 'user';
+    var roleName = role === 'admin' ? '管理员' : role === 'moderator' ? '版主' : '用户';
+
+    html +=
+      '<tr>' +
+      '<td>' + escapeHtml(user.get('displayName') || '未设置') + '</td>' +
+      '<td>' + escapeHtml(user.getEmail() || '') + '</td>' +
+      '<td><span class="role-badge ' + role + '">' + roleName + '</span></td>' +
+      '<td>' + formatTime(user.createdAt) + '</td>' +
+      '<td><select onchange="handleSetRole(\'' + user.id + '\', this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;">' +
+      '<option value="user"' + (role === 'user' ? ' selected' : '') + '>普通用户</option>' +
+      '<option value="moderator"' + (role === 'moderator' ? ' selected' : '') + '>版主</option>' +
+      '<option value="admin"' + (role === 'admin' ? ' selected' : '') + '>管理员</option>' +
+      '</select></td></tr>';
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
 }
 
-// 交互处理函数
+// 交互处理
 async function handleTogglePin(postId, currentStatus) {
   try {
     await togglePin(postId, currentStatus);
@@ -194,7 +179,7 @@ async function handleToggleLock(postId, currentStatus) {
 }
 
 async function handleAdminDeletePost(postId) {
-  if (!confirm('确定要删除这篇帖子吗？删除后不可恢复。')) return;
+  if (!confirm('确定删除这篇帖子吗？')) return;
   try {
     await adminDeletePost(postId);
     loadAdminPosts();
@@ -212,27 +197,24 @@ async function handleSetRole(userId, role) {
   }
 }
 
-// 当前页码
-let adminCurrentPage = 1;
+var adminCurrentPage = 1;
 
 async function loadAdminPosts(page) {
   if (page) adminCurrentPage = page;
-  const container = document.getElementById('admin-posts-list');
+  var container = document.getElementById('admin-posts-list');
   if (!container) return;
-
   container.innerHTML = '<div class="loading">加载中...</div>';
 
   try {
-    const { data, count } = await adminLoadPosts(adminCurrentPage);
-    renderAdminPosts(data, container);
+    var result = await adminLoadPosts(adminCurrentPage);
+    renderAdminPosts(result.data, container);
 
-    // 分页
-    const totalPages = Math.ceil(count / 20);
-    const paginationDiv = document.getElementById('admin-posts-pagination');
+    var totalPages = Math.ceil(result.count / 20);
+    var paginationDiv = document.getElementById('admin-posts-pagination');
     if (paginationDiv && totalPages > 1) {
-      let html = '';
-      for (let i = 1; i <= totalPages; i++) {
-        html += `<button class="btn-action ${i === adminCurrentPage ? 'active' : ''}" onclick="loadAdminPosts(${i})">${i}</button>`;
+      var html = '';
+      for (var i = 1; i <= totalPages; i++) {
+        html += '<button class="btn-action' + (i === adminCurrentPage ? ' active' : '') + '" onclick="loadAdminPosts(' + i + ')">' + i + '</button>';
       }
       paginationDiv.innerHTML = html;
     }
@@ -242,13 +224,12 @@ async function loadAdminPosts(page) {
 }
 
 async function loadAdminUsers() {
-  const container = document.getElementById('admin-users-list');
+  var container = document.getElementById('admin-users-list');
   if (!container) return;
-
   container.innerHTML = '<div class="loading">加载中...</div>';
 
   try {
-    const users = await adminLoadUsers();
+    var users = await adminLoadUsers();
     renderAdminUsers(users, container);
   } catch (e) {
     container.innerHTML = '<div class="loading">加载失败: ' + e.message + '</div>';
@@ -257,7 +238,7 @@ async function loadAdminUsers() {
 
 async function loadAdminStats() {
   try {
-    const stats = await getStats();
+    var stats = await getStats();
     document.getElementById('stat-posts').textContent = stats.totalPosts;
     document.getElementById('stat-users').textContent = stats.totalUsers;
     document.getElementById('stat-today').textContent = stats.todayPosts;

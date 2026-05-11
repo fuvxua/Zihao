@@ -28,14 +28,14 @@
   <div class="footer">我的论坛 &copy; 2026</div>
 
   <!-- JS -->
-  <script src="lib/supabase.min.js"></script>
-  <script src="js/supabase-client.js"></script>
+  <script src="lib/av-min.js"></script>
+  <script src="js/av-init.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/posts.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
-      const session = await requireAuth();
-      if (!session) return;
+      var user = await requireAuth();
+      if (!user) return;
       loadPosts('post-list');
     });
   </script>
