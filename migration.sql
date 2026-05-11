@@ -26,7 +26,7 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS view_count integer DEFAULT 0;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS reply_count integer DEFAULT 0;
 
 -- 4. 浏览量递增函数
-CREATE OR REPLACE FUNCTION increment_view_count(post_id uuid)
+CREATE OR REPLACE FUNCTION increment_view_count(post_id bigint)
 RETURNS void AS $$
   UPDATE posts SET view_count = view_count + 1 WHERE id = post_id;
 $$ LANGUAGE sql;
