@@ -89,7 +89,7 @@ async function uploadAvatar(file) {
     .from('avatars')
     .getPublicUrl(data.path);
 
-  const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+  const avatarUrl = getProxiedUrl(urlData.publicUrl) + '?t=' + Date.now();
 
   // 更新用户 metadata
   await supabaseClient.auth.updateUser({

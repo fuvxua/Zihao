@@ -152,7 +152,7 @@ async function uploadImage(file) {
     .from('images')
     .getPublicUrl(data.path);
 
-  return urlData.publicUrl;
+  return getProxiedUrl(urlData.publicUrl);
 }
 
 // 安全渲染帖子内容（支持图片标签）
