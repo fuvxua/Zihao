@@ -77,7 +77,6 @@
       }
 
       // 检查是否是作者或管理员
-      const session = await checkAuth();
       const isAuthor = session && session.user.id === post.author_id;
       const admin = await isAdmin();
       const canDelete = isAuthor || admin;
