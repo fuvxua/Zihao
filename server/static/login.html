@@ -9,6 +9,12 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen flex items-center justify-center p-4">
+  <script>
+    // 登录已改为弹窗，此页面重定向到首页
+    if (!window.location.search.includes('direct')) {
+      window.location.replace('index.html');
+    }
+  </script>
 
   <main class="w-full max-w-[420px]">
     <!-- Logo -->
