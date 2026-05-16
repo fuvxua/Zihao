@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>公告 - 子豪的论坛</title>
+  <title>留言空间 - 子豪的论坛</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/tailwind-config.js"></script>
   <link rel="stylesheet" href="css/style.css">
@@ -19,29 +19,22 @@
   </nav>
 
   <div class="max-w-4xl mx-auto px-6 lg:px-10 py-8">
-    <!-- 页面头部 -->
     <div class="flex items-center gap-2.5 mb-7">
-      <svg class="text-primary" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <h1 class="text-xl font-bold text-slate-800 tracking-tight">公告列表</h1>
+      <svg class="text-primary" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <h1 class="text-xl font-bold text-slate-800 tracking-tight">留言空间</h1>
     </div>
 
-    <!-- 公告列表 -->
-    <div id="announcement-list" class="flex flex-col gap-4">
+    <div id="guestbook-form-area" class="mb-6"></div>
+    <div id="guestbook-list" class="flex flex-col gap-4">
       <div class="text-center py-10 text-sm text-subtle">加载中...</div>
     </div>
+    <div id="guestbook-pagination" class="flex gap-2 justify-center mt-6"></div>
   </div>
 
-  <div class="text-center py-8 text-sm text-subtle">© 2024 子豪的论坛 · 用心交流，分享每一份思考</div>
+  <div class="text-center py-8 text-sm text-subtle">&copy; 2024 子豪的论坛</div>
 
   <script src="js/auth.js"></script>
-  <script src="js/posts.js"></script>
   <script src="js/announcements.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      var user = await checkAuth();
-      loadAnnouncements('announcement-list');
-      if (user) checkAndShowAnnouncementPopup();
-    });
-  </script>
+  <script src="js/messages.js"></script>
 </body>
 </html>

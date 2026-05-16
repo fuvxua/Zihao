@@ -1,0 +1,27 @@
+/* ========== Minimal Reset (Tailwind CDN handles most) ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ========== Login Form Tabs ========== */
+.login-form-panel {
+  display: none;
+}
+
+.login-form-panel.active {
+  display: block;
+  animation: panelIn 0.2s ease-out;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== Image Upload Dragover ========== */
+.image-upload-area.dragover {
+  border-color: #4a8c6f;
+  background: rgba(74,140,111,0.08);
+}
