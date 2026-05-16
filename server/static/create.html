@@ -53,8 +53,8 @@
   <script>
     const uploadedImages = [];
     document.addEventListener('DOMContentLoaded', async function() {
-      const session = await checkAuth();
-      if (!session) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      const session = await requireAuth();
+      if (!session) return;
       checkAndShowAnnouncementPopup();
       const uploadArea = document.getElementById('upload-area');
       const imageInput = document.getElementById('image-input');

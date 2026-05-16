@@ -174,19 +174,16 @@
     }
 
     async function refreshUser() {
-      var user = await checkAuth();
-      if (!user) {
-        window.location.href = 'login.html?return=' + encodeURIComponent('edit-profile.html');
-        return null;
-      }
+      var user = await requireAuth();
+      if (!user) return null;
       renderSidebar(user);
       renderEditPreview(user);
       return user;
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
-      var user = await checkAuth();
-      if (!user) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      var user = await requireAuth();
+      if (!user) return;
       renderSidebar(user);
       renderEditPreview(user);
 

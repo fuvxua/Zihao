@@ -80,8 +80,8 @@
   <script src="js/announcements.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
-      const session = await checkAuth();
-      if (!session) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      const session = await requireAuth();
+      if (!session) return;
       const admin = await isAdmin();
       if (!admin) { alert('权限不足'); window.location.href = 'index.html'; return; }
 

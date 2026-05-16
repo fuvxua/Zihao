@@ -106,8 +106,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
-      var user = await checkAuth();
-      if (!user) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      var user = await requireAuth();
+      if (!user) return;
       renderSidebar(user);
       loadMyPosts();
     });
