@@ -1,441 +1,130 @@
-/* ========== Minimal Reset (Tailwind CDN handles most) ========== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 子豪的论坛</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen flex items-center justify-center p-4">
 
-/* ========== Login Page - Tech Style ========== */
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 20px;
-  background:
-    radial-gradient(circle at 18% 24%, rgba(20, 184, 166, 0.28), transparent 28%),
-    radial-gradient(circle at 84% 12%, rgba(79, 70, 229, 0.26), transparent 30%),
-    linear-gradient(145deg, #050816 0%, #0b1224 45%, #101726 100%);
-  color: #e5f4ff;
-  position: relative;
-  overflow: hidden;
-}
+  <main class="w-full max-w-[420px]">
+    <!-- Logo -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-white text-2xl font-bold shadow-lg shadow-green-900/10 mb-3">Z</div>
+      <h1 class="text-xl font-bold text-slate-800">子豪的论坛</h1>
+      <p class="text-sm text-subtle mt-1">登录或注册，开始交流</p>
+    </div>
 
-.login-page::before,
-.login-page::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
+    <!-- 登录窗口 -->
+    <section class="bg-white rounded-2xl shadow-lg shadow-green-900/5 border border-slate-200/60 overflow-hidden">
+      <!-- 标签切换 -->
+      <div class="flex border-b border-slate-200/60">
+        <button class="login-tab active flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent -mb-px" type="button" data-tab="login">登录</button>
+        <button class="login-tab flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent -mb-px" type="button" data-tab="register">注册</button>
+      </div>
 
-.login-page::before {
-  background-image:
-    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 15%, #000 82%, transparent 100%);
-}
+      <!-- 登录表单 -->
+      <div class="login-form-panel active p-6" id="panel-login">
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm" id="login-error"></div>
+        <form id="login-form">
+          <div class="mb-4">
+            <label for="login-email" class="block text-sm font-medium text-slate-600 mb-1.5">用户名或邮箱</label>
+            <input type="text" id="login-email" required placeholder="请输入用户名或邮箱" autocomplete="username" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <div class="mb-5">
+            <label for="login-password" class="block text-sm font-medium text-slate-600 mb-1.5">密码</label>
+            <input type="password" id="login-password" required placeholder="请输入密码" minlength="6" autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-all duration-200 shadow-sm">进入论坛</button>
+        </form>
+      </div>
 
-.login-page::after {
-  background: linear-gradient(120deg, transparent 0%, rgba(34, 211, 238, 0.09) 50%, transparent 100%);
-  transform: translateX(-70%);
-  animation: loginSweep 8s ease-in-out infinite;
-}
+      <!-- 注册表单 -->
+      <div class="login-form-panel p-6" id="panel-register">
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm" id="register-error"></div>
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm" id="register-success"></div>
+        <form id="register-form">
+          <div class="mb-4">
+            <label for="register-name" class="block text-sm font-medium text-slate-600 mb-1.5">昵称</label>
+            <input type="text" id="register-name" required placeholder="请输入昵称" maxlength="20" autocomplete="name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <div class="mb-4">
+            <label for="register-email" class="block text-sm font-medium text-slate-600 mb-1.5">邮箱</label>
+            <input type="email" id="register-email" required placeholder="请输入邮箱" autocomplete="email" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <div class="mb-5">
+            <label for="register-password" class="block text-sm font-medium text-slate-600 mb-1.5">密码</label>
+            <input type="password" id="register-password" required placeholder="请输入密码（至少6位）" minlength="6" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-all duration-200 shadow-sm">创建账号</button>
+        </form>
+      </div>
+    </section>
 
-.login-background,
-.login-shell {
-  position: relative;
-  z-index: 1;
-}
+    <p class="text-center text-xs text-subtle mt-5">&copy; 2026 子豪的论坛</p>
+  </main>
 
-.login-background {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
+  <script src="js/auth.js"></script>
+  <script>
+    var activeTabClass = 'login-tab active flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-primary text-primary -mb-px';
+    var inactiveTabClass = 'login-tab flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent text-slate-400 hover:text-slate-600 -mb-px';
 
-.grid-glow {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border: 1px solid rgba(34, 211, 238, 0.18);
-  border-radius: 32px;
-  filter: drop-shadow(0 0 28px rgba(34, 211, 238, 0.28));
-  transform: rotate(45deg);
-}
+    document.querySelectorAll('.login-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.login-tab').forEach(function(t) { t.className = inactiveTabClass; });
+        document.querySelectorAll('.login-form-panel').forEach(function(p) { p.classList.remove('active'); });
+        this.className = activeTabClass;
+        document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+      });
+    });
 
-.grid-glow::before,
-.grid-glow::after {
-  content: '';
-  position: absolute;
-  inset: 42px;
-  border: 1px solid rgba(129, 140, 248, 0.18);
-  border-radius: 24px;
-}
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var errorDiv = document.getElementById('login-error');
+      errorDiv.classList.add('hidden');
 
-.grid-glow::after {
-  inset: 96px;
-  border-color: rgba(45, 212, 191, 0.2);
-}
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
 
-.grid-glow-a {
-  left: -130px;
-  bottom: 6%;
-}
+      try {
+        await login(email, password);
+        var urlParams = new URLSearchParams(window.location.search);
+        var returnUrl = urlParams.get('return');
+        window.location.href = returnUrl ? decodeURIComponent(returnUrl) : 'index.html';
+      } catch (err) {
+        errorDiv.textContent = '登录失败: ' + (err.message || '请检查邮箱和密码');
+        errorDiv.classList.remove('hidden');
+      }
+    });
 
-.grid-glow-b {
-  right: -150px;
-  top: 4%;
-}
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var errorDiv = document.getElementById('register-error');
+      var successDiv = document.getElementById('register-success');
+      errorDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
 
-.scan-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 18%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.6), transparent);
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.55);
-  animation: scanMove 5.5s linear infinite;
-}
+      var name = document.getElementById('register-name').value.trim();
+      var email = document.getElementById('register-email').value.trim();
+      var password = document.getElementById('register-password').value;
 
-.login-shell {
-  width: min(100%, 1040px);
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) 420px;
-  gap: 42px;
-  align-items: center;
-}
+      try {
+        await register(email, password, name);
+        successDiv.textContent = '注册成功！请切换到登录';
+        successDiv.classList.remove('hidden');
+        document.getElementById('register-form').reset();
+        setTimeout(function() {
+          document.querySelector('.login-tab[data-tab="login"]').click();
+        }, 1000);
+      } catch (err) {
+        errorDiv.textContent = '注册失败: ' + (err.message || '请检查输入内容');
+        errorDiv.classList.remove('hidden');
+      }
+    });
+  </script>
 
-.login-hero {
-  padding: 20px 0;
-}
-
-.hero-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 1px solid rgba(125, 211, 252, 0.28);
-  border-radius: 999px;
-  color: #67e8f9;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  background: rgba(8, 47, 73, 0.38);
-}
-
-.hero-kicker::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #22d3ee;
-  box-shadow: 0 0 14px #22d3ee;
-}
-
-.login-hero h1 {
-  margin-top: 24px;
-  font-size: clamp(42px, 7vw, 72px);
-  line-height: 1.02;
-  color: #ffffff;
-  text-shadow: 0 0 28px rgba(56, 189, 248, 0.35);
-}
-
-.login-hero p {
-  width: min(100%, 540px);
-  margin-top: 18px;
-  color: #b6c7dc;
-  font-size: 17px;
-  line-height: 1.9;
-}
-
-.hero-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  width: min(100%, 520px);
-  margin-top: 34px;
-}
-
-.hero-metrics div {
-  min-height: 84px;
-  padding: 15px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.64), rgba(15, 23, 42, 0.28));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.hero-metrics strong,
-.hero-metrics span {
-  display: block;
-}
-
-.hero-metrics strong {
-  color: #7dd3fc;
-  font-size: 23px;
-  line-height: 1;
-}
-
-.hero-metrics span {
-  margin-top: 9px;
-  color: #93a4ba;
-  font-size: 13px;
-}
-
-.login-card {
-  width: 100%;
-  padding: 34px;
-  border: 1px solid rgba(125, 211, 252, 0.28);
-  border-radius: 8px;
-  background:
-    linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(17, 24, 39, 0.72)),
-    linear-gradient(180deg, rgba(34, 211, 238, 0.08), transparent);
-  backdrop-filter: blur(24px);
-  box-shadow:
-    0 26px 80px rgba(0, 0, 0, 0.48),
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
-}
-
-.login-brand {
-  text-align: center;
-  margin-bottom: 26px;
-}
-
-.login-logo {
-  width: 58px;
-  height: 58px;
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.95), rgba(99, 102, 241, 0.95)),
-    #0f172a;
-  color: #fff;
-  font-size: 28px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-  box-shadow: 0 0 28px rgba(34, 211, 238, 0.35);
-}
-
-.login-brand h2 {
-  color: #f8fbff;
-  font-size: 25px;
-  line-height: 1.2;
-  margin-bottom: 8px;
-}
-
-.login-brand p {
-  color: #8ba3bd;
-  font-size: 13px;
-}
-
-.login-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 6px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.36);
-}
-
-.login-tab {
-  min-height: 42px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #7f94ad;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
-  user-select: none;
-}
-
-.login-tab:hover {
-  color: #dbeafe;
-}
-
-.login-tab.active {
-  color: #06121f;
-  background: linear-gradient(135deg, #67e8f9, #93c5fd);
-  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.22);
-}
-
-.login-form-panel {
-  display: none;
-}
-
-.login-form-panel.active {
-  display: block;
-  animation: panelIn 0.24s ease-out;
-}
-
-.login-form-panel .form-group {
-  margin-bottom: 18px;
-}
-
-.login-form-panel .form-group label {
-  color: #a9bad1;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-}
-
-.login-form-panel .form-group input {
-  height: 46px;
-  padding: 11px 13px;
-  border: 1px solid rgba(125, 211, 252, 0.18);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.42);
-  color: #eef8ff;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-
-.login-form-panel .form-group input::placeholder {
-  color: #53657d;
-}
-
-.login-form-panel .form-group input:focus {
-  border-color: rgba(103, 232, 249, 0.88);
-  background: rgba(2, 6, 23, 0.64);
-  box-shadow:
-    0 0 0 3px rgba(34, 211, 238, 0.12),
-    0 0 18px rgba(34, 211, 238, 0.14);
-}
-
-.login-form-panel .btn-block {
-  min-height: 48px;
-  margin-top: 8px;
-  border: 0;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #22d3ee, #6366f1);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
-}
-
-.login-form-panel .btn-block:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow: 0 18px 40px rgba(34, 211, 238, 0.34);
-}
-
-.login-form-panel .msg-error {
-  background: rgba(127, 29, 29, 0.38);
-  border-color: rgba(248, 113, 113, 0.32);
-  color: #fecaca;
-}
-
-.login-form-panel .msg-success {
-  background: rgba(20, 83, 45, 0.38);
-  border-color: rgba(74, 222, 128, 0.32);
-  color: #bbf7d0;
-}
-
-@keyframes loginSweep {
-  0%, 30% {
-    transform: translateX(-72%);
-  }
-  58%, 100% {
-    transform: translateX(72%);
-  }
-}
-
-@keyframes scanMove {
-  0% {
-    transform: translateY(-24vh);
-    opacity: 0;
-  }
-  18%, 70% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(76vh);
-    opacity: 0;
-  }
-}
-
-@keyframes panelIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.btn-block {
-  display: block;
-  width: 100%;
-}
-
-/* ========== Image Upload Dragover ========== */
-.image-upload-area.dragover {
-  border-color: #4a8c6f;
-  background: rgba(74,140,111,0.08);
-}
-
-/* ========== Login Responsive ========== */
-@media (max-width: 768px) {
-  .login-card {
-    padding: 24px 16px;
-  }
-
-  .login-page {
-    padding: 16px 10px;
-    align-items: flex-start;
-  }
-
-  .login-shell {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .login-hero {
-    padding-top: 4px;
-    text-align: center;
-  }
-
-  .login-hero h1 {
-    font-size: 32px;
-  }
-
-  .login-hero p {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-
-  .hero-metrics {
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
-    margin-top: 16px;
-  }
-
-  .hero-metrics div {
-    min-height: 64px;
-    padding: 10px 6px;
-  }
-
-  .hero-metrics strong {
-    font-size: 16px;
-  }
-
-  .hero-metrics span {
-    font-size: 11px;
-  }
-}
+</body>
+</html>

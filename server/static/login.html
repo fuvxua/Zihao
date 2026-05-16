@@ -8,136 +8,120 @@
   <script src="js/tailwind-config.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="login-page">
+<body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen flex items-center justify-center p-4">
 
-  <div class="login-background" aria-hidden="true">
-    <span class="grid-glow grid-glow-a"></span>
-    <span class="grid-glow grid-glow-b"></span>
-    <span class="scan-line"></span>
-  </div>
+  <main class="w-full max-w-[420px]">
+    <!-- Logo -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-white text-2xl font-bold shadow-lg shadow-green-900/10 mb-3">Z</div>
+      <h1 class="text-xl font-bold text-slate-800">子豪的论坛</h1>
+      <p class="text-sm text-subtle mt-1">登录或注册，开始交流</p>
+    </div>
 
-  <main class="login-shell">
-    <section class="login-hero" aria-label="论坛简介">
-      <div class="hero-kicker">CONNECTED COMMUNITY</div>
-      <h1>子豪的论坛</h1>
-      <p>进入你的数字交流空间，发布想法、参与讨论，并与更多同频的人保持连接。</p>
-      <div class="hero-metrics" aria-hidden="true">
-        <div>
-          <strong>热帖</strong>
-          <span>精彩讨论</span>
-        </div>
-        <div>
-          <strong>好友</strong>
-          <span>同频交流</span>
-        </div>
-        <div>
-          <strong>成长</strong>
-          <span>每天进步</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="login-card" aria-label="登录注册面板">
-      <div class="login-brand">
-        <div class="login-logo">M</div>
-        <h2>欢迎回来</h2>
-        <p>登录账号，继续探索社区新动态</p>
+    <!-- 登录窗口 -->
+    <section class="bg-white rounded-2xl shadow-lg shadow-green-900/5 border border-slate-200/60 overflow-hidden">
+      <!-- 标签切换 -->
+      <div class="flex border-b border-slate-200/60">
+        <button class="login-tab active flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent -mb-px" type="button" data-tab="login">登录</button>
+        <button class="login-tab flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent -mb-px" type="button" data-tab="register">注册</button>
       </div>
 
-      <div class="login-tabs" role="tablist" aria-label="账号操作">
-        <button class="login-tab active" type="button" data-tab="login" role="tab">登录</button>
-        <button class="login-tab" type="button" data-tab="register" role="tab">注册</button>
-      </div>
-
-      <div class="login-form-panel active" id="panel-login">
-        <div class="msg msg-error" id="login-error"></div>
+      <!-- 登录表单 -->
+      <div class="login-form-panel active p-6" id="panel-login">
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm" id="login-error"></div>
         <form id="login-form">
-          <div class="form-group">
-            <label for="login-email">用户名或邮箱</label>
-            <input type="text" id="login-email" required placeholder="请输入用户名或邮箱" autocomplete="username">
+          <div class="mb-4">
+            <label for="login-email" class="block text-sm font-medium text-slate-600 mb-1.5">用户名或邮箱</label>
+            <input type="text" id="login-email" required placeholder="请输入用户名或邮箱" autocomplete="username" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
           </div>
-          <div class="form-group">
-            <label for="login-password">密码</label>
-            <input type="password" id="login-password" required placeholder="请输入密码" minlength="6" autocomplete="current-password">
+          <div class="mb-5">
+            <label for="login-password" class="block text-sm font-medium text-slate-600 mb-1.5">密码</label>
+            <input type="password" id="login-password" required placeholder="请输入密码" minlength="6" autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">进入论坛</button>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-all duration-200 shadow-sm">进入论坛</button>
         </form>
       </div>
 
-      <div class="login-form-panel" id="panel-register">
-        <div class="msg msg-error" id="register-error"></div>
-        <div class="msg msg-success" id="register-success"></div>
+      <!-- 注册表单 -->
+      <div class="login-form-panel p-6" id="panel-register">
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm" id="register-error"></div>
+        <div class="hidden mb-4 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm" id="register-success"></div>
         <form id="register-form">
-          <div class="form-group">
-            <label for="register-name">昵称</label>
-            <input type="text" id="register-name" required placeholder="请输入昵称" maxlength="20" autocomplete="name">
+          <div class="mb-4">
+            <label for="register-name" class="block text-sm font-medium text-slate-600 mb-1.5">昵称</label>
+            <input type="text" id="register-name" required placeholder="请输入昵称" maxlength="20" autocomplete="name" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
           </div>
-          <div class="form-group">
-            <label for="register-email">邮箱</label>
-            <input type="email" id="register-email" required placeholder="请输入邮箱" autocomplete="email">
+          <div class="mb-4">
+            <label for="register-email" class="block text-sm font-medium text-slate-600 mb-1.5">邮箱</label>
+            <input type="email" id="register-email" required placeholder="请输入邮箱" autocomplete="email" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
           </div>
-          <div class="form-group">
-            <label for="register-password">密码</label>
-            <input type="password" id="register-password" required placeholder="请输入密码（至少6位）" minlength="6" autocomplete="new-password">
+          <div class="mb-5">
+            <label for="register-password" class="block text-sm font-medium text-slate-600 mb-1.5">密码</label>
+            <input type="password" id="register-password" required placeholder="请输入密码（至少6位）" minlength="6" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">创建账号</button>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-all duration-200 shadow-sm">创建账号</button>
         </form>
       </div>
     </section>
+
+    <p class="text-center text-xs text-subtle mt-5">&copy; 2026 子豪的论坛</p>
   </main>
 
   <script src="js/auth.js"></script>
   <script>
-    document.querySelectorAll('.login-tab').forEach(tab => {
+    var activeTabClass = 'login-tab active flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-primary text-primary -mb-px';
+    var inactiveTabClass = 'login-tab flex-1 py-3.5 text-sm font-semibold text-center cursor-pointer transition-all border-b-2 border-transparent text-slate-400 hover:text-slate-600 -mb-px';
+
+    document.querySelectorAll('.login-tab').forEach(function(tab) {
       tab.addEventListener('click', function() {
-        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.login-form-panel').forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
+        document.querySelectorAll('.login-tab').forEach(function(t) { t.className = inactiveTabClass; });
+        document.querySelectorAll('.login-form-panel').forEach(function(p) { p.classList.remove('active'); });
+        this.className = activeTabClass;
         document.getElementById('panel-' + this.dataset.tab).classList.add('active');
       });
     });
 
     document.getElementById('login-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const errorDiv = document.getElementById('login-error');
-      errorDiv.style.display = 'none';
+      var errorDiv = document.getElementById('login-error');
+      errorDiv.classList.add('hidden');
 
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
 
       try {
         await login(email, password);
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnUrl = urlParams.get('return');
+        var urlParams = new URLSearchParams(window.location.search);
+        var returnUrl = urlParams.get('return');
         window.location.href = returnUrl ? decodeURIComponent(returnUrl) : 'index.html';
       } catch (err) {
         errorDiv.textContent = '登录失败: ' + (err.message || '请检查邮箱和密码');
-        errorDiv.style.display = 'block';
+        errorDiv.classList.remove('hidden');
       }
     });
 
     document.getElementById('register-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const errorDiv = document.getElementById('register-error');
-      const successDiv = document.getElementById('register-success');
-      errorDiv.style.display = 'none';
-      successDiv.style.display = 'none';
+      var errorDiv = document.getElementById('register-error');
+      var successDiv = document.getElementById('register-success');
+      errorDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
 
-      const name = document.getElementById('register-name').value.trim();
-      const email = document.getElementById('register-email').value.trim();
-      const password = document.getElementById('register-password').value;
+      var name = document.getElementById('register-name').value.trim();
+      var email = document.getElementById('register-email').value.trim();
+      var password = document.getElementById('register-password').value;
 
       try {
         await register(email, password, name);
         successDiv.textContent = '注册成功！请切换到登录';
-        successDiv.style.display = 'block';
+        successDiv.classList.remove('hidden');
         document.getElementById('register-form').reset();
-        setTimeout(() => {
+        setTimeout(function() {
           document.querySelector('.login-tab[data-tab="login"]').click();
         }, 1000);
       } catch (err) {
         errorDiv.textContent = '注册失败: ' + (err.message || '请检查输入内容');
-        errorDiv.style.display = 'block';
+        errorDiv.classList.remove('hidden');
       }
     });
   </script>
