@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>子豪的论坛</title>
+  <title>公告 - 子豪的论坛</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/tailwind-config.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen">
 
-  <!-- 导航栏 -->
   <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-none shadow-sm shadow-green-900/5">
     <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-[60px]">
       <a href="index.html" class="text-lg font-bold text-emerald-800 tracking-tight no-underline">子豪的论坛</a>
@@ -18,40 +17,30 @@
     </div>
   </nav>
 
-  <!-- 主内容 -->
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 py-8">
     <!-- 页面头部 -->
-    <div class="flex items-center justify-between mb-7">
-      <div class="flex items-center gap-2.5">
-        <svg class="text-primary" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <h1 class="text-xl font-bold text-slate-800 tracking-tight">全部帖子</h1>
-      </div>
-      <a href="create.html" class="inline-flex items-center gap-1.5 bg-primary text-white rounded-full px-5 py-2 text-sm font-semibold shadow-sm shadow-green-900/5 hover:bg-primary-hover transition-all duration-200 no-underline">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        发帖
-      </a>
+    <div class="flex items-center gap-2.5 mb-7">
+      <svg class="text-primary" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <h1 class="text-xl font-bold text-slate-800 tracking-tight">公告列表</h1>
     </div>
 
-    <!-- 帖子列表 -->
-    <div id="post-list" class="bg-white rounded-card shadow-sm shadow-green-900/5 divide-y divide-slate-100 overflow-hidden">
+    <!-- 公告列表 -->
+    <div id="announcement-list" class="flex flex-col gap-4">
       <div class="text-center py-10 text-sm text-subtle">加载中...</div>
     </div>
   </div>
 
-  <!-- 页脚 -->
   <div class="text-center py-8 text-sm text-subtle">© 2024 子豪的论坛 · 用心交流，分享每一份思考</div>
 
-  <!-- JS -->
   <script src="js/auth.js"></script>
   <script src="js/posts.js"></script>
   <script src="js/announcements.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
       var user = await checkAuth();
-      loadPosts('post-list');
+      loadAnnouncements('announcement-list');
       if (user) checkAndShowAnnouncementPopup();
     });
   </script>
-
 </body>
 </html>

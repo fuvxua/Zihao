@@ -34,20 +34,23 @@ async function loadPosts(containerId) {
       var likeCount = post.likeCount || 0;
       var isLiked = post.isLiked;
       html +=
-        '<a href="post.html?id=' + post.id + '" class="flex items-start gap-4 px-6 py-5 hover:bg-emerald-50/40 transition-all duration-200 no-underline text-ink group">' +
-        '<div class="shrink-0 pt-0.5">' + renderUserAvatar(authorName, avatarUrl, 38) + '</div>' +
-        '<div class="flex-1 min-w-0">' +
-        '<div class="flex items-center gap-2 mb-1">' +
-        '<span class="text-[13px] font-semibold text-ink">' + authorName + '</span>' +
+        '<a href="post.html?id=' + post.id + '" class="flex items-center gap-5 px-6 py-4 hover:bg-emerald-50/40 transition-all duration-200 no-underline text-ink">' +
+        '<div class="flex items-center gap-2.5 min-w-[160px] shrink-0">' +
+        renderUserAvatar(authorName, avatarUrl, 34) +
+        '<div class="flex flex-col min-w-0">' +
+        '<span class="text-[13px] font-semibold text-ink truncate">' + authorName + '</span>' +
         '<span class="text-xs text-subtle">' + time + '</span>' +
-        (post.isPinned ? '<span class="bg-amber-500 text-white text-[11px] px-2 py-0.5 rounded-md font-semibold">置顶</span>' : '') +
+        '</div></div>' +
+        '<div class="flex-1 min-w-0">' +
+        '<div class="text-[15px] font-semibold text-slate-800 mb-0.5 flex items-center gap-1.5">' + title +
+        (post.isPinned ? ' <span class="bg-amber-500 text-white text-[11px] px-2 py-0.5 rounded-md font-semibold">置顶</span>' : '') +
         '</div>' +
-        '<div class="text-[15px] font-semibold text-slate-800 mb-1 group-hover:text-primary transition-colors">' + title + '</div>' +
-        (excerpt ? '<div class="text-[13px] text-slate-500 line-clamp-1 mb-2">' + excerpt + '</div>' : '') +
-        '<div class="flex items-center gap-4">' +
-        '<span class="flex items-center gap-1 text-[12px] text-subtle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ' + viewCount + '</span>' +
-        '<span class="flex items-center gap-1 text-[12px] text-subtle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ' + replyCount + '</span>' +
-        '<span class="flex items-center gap-1 text-[12px] ' + (isLiked ? 'text-primary' : 'text-subtle') + '"><svg width="13" height="13" viewBox="0 0 24 24" ' + (isLiked ? 'fill="currentColor"' : 'fill="none"') + ' stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ' + likeCount + '</span>' +
+        (excerpt ? '<div class="text-[13px] text-slate-500 truncate">' + excerpt + '</div>' : '') +
+        '</div>' +
+        '<div class="shrink-0"><div class="flex items-center gap-4">' +
+        '<span class="flex items-center gap-1 text-[13px] text-subtle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ' + viewCount + '</span>' +
+        '<span class="flex items-center gap-1 text-[13px] text-subtle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ' + replyCount + '</span>' +
+        '<span class="flex items-center gap-1 text-[13px] ' + (isLiked ? 'text-primary' : 'text-subtle') + '"><svg width="14" height="14" viewBox="0 0 24 24" ' + (isLiked ? 'fill="currentColor"' : 'fill="none"') + ' stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ' + likeCount + '</span>' +
         '</div></div></a>';
     }
     container.innerHTML = html;

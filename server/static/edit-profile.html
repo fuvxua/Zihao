@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑资料 - 子豪的论坛</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen">
+
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-none shadow-sm shadow-green-900/5">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-[60px]">
+      <a href="index.html" class="text-lg font-bold text-emerald-800 tracking-tight no-underline">子豪的论坛</a>
+      <ul class="flex items-center gap-1 list-none" id="nav-links"></ul>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6">
+      <aside>
+        <div class="bg-gradient-to-br from-slate-800 to-slate-700 rounded-card p-8 text-center text-white shadow-sm" id="sidebar-card">
+          <div class="flex justify-center mb-4" id="sidebar-avatar"></div>
+          <h2 class="text-xl font-bold mb-1" id="sidebar-name">-</h2>
+          <p class="text-sm opacity-85 mb-1" id="sidebar-role">-</p>
+          <p class="text-xs opacity-60 break-all" id="sidebar-email">-</p>
+        </div>
+        <nav class="bg-white rounded-card shadow-sm shadow-green-900/5 mt-4 overflow-hidden divide-y divide-slate-200/50">
+          <a href="profile.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-ink hover:bg-primary-light hover:text-primary transition-colors no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+            我的帖子
+          </a>
+          <a href="edit-profile.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-semibold text-primary bg-primary-light transition-colors no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            编辑资料
+          </a>
+          <a href="index.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-ink hover:bg-primary-light hover:text-primary transition-colors no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            返回首页
+          </a>
+        </nav>
+      </aside>
+
+      <main class="min-w-0">
+        <h1 class="text-xl font-bold text-slate-800 tracking-tight mb-5">编辑资料</h1>
+
+        <div class="bg-white rounded-card shadow-sm shadow-green-900/5 p-6 flex items-center gap-4 mb-5">
+          <div class="shrink-0" id="edit-avatar-wrap"></div>
+          <div>
+            <h2 class="text-lg font-bold text-ink mb-1" id="edit-name">-</h2>
+            <p class="text-sm text-slate-500" id="edit-role">-</p>
+          </div>
+        </div>
+
+        <section class="bg-white rounded-card shadow-sm shadow-green-900/5 p-6 mb-5">
+          <h3 class="text-base font-semibold text-ink mb-4 pb-3 border-b border-slate-200/50">基本信息</h3>
+          <div class="hidden px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-sm mb-4" id="profile-success"></div>
+          <div class="hidden px-4 py-2.5 rounded-xl bg-red-50 text-red-600 text-sm mb-4" id="profile-error"></div>
+          <form id="profile-form">
+            <div class="mb-4">
+              <label class="block text-sm font-semibold mb-1.5">昵称</label>
+              <input type="text" id="display-name" maxlength="20" required placeholder="请输入昵称" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-none text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-semibold mb-1.5">邮箱</label>
+              <input type="email" id="profile-email" disabled class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border-none text-sm text-slate-400 outline-none cursor-not-allowed">
+            </div>
+            <button type="submit" class="bg-primary text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-primary-hover transition-all duration-200">保存昵称</button>
+          </form>
+        </section>
+
+        <section class="bg-white rounded-card shadow-sm shadow-green-900/5 p-6 mb-5">
+          <h3 class="text-base font-semibold text-ink mb-4 pb-3 border-b border-slate-200/50">更换头像</h3>
+          <div class="flex items-center gap-4 p-4 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-primary-light transition-all" id="avatar-upload-area">
+            <div class="shrink-0" id="avatar-current"></div>
+            <div>
+              <p class="text-sm font-medium text-ink mb-1">点击上传新头像</p>
+              <span class="text-xs text-slate-500">支持 JPG、PNG、GIF、WebP，最大 2MB</span>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" class="hidden">
+          </div>
+        </section>
+
+        <section class="bg-white rounded-card shadow-sm shadow-green-900/5 p-6 mb-5">
+          <h3 class="text-base font-semibold text-ink mb-4 pb-3 border-b border-slate-200/50">页面背景</h3>
+          <div class="flex items-center gap-4 p-4 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-primary-light transition-all" id="bg-upload-area">
+            <div class="w-[120px] h-[60px] rounded-lg bg-slate-50 bg-cover bg-center flex items-center justify-center text-xs text-slate-500 shrink-0" id="bg-preview">
+              <span>暂无背景图</span>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-ink mb-1">点击上传背景图</p>
+              <span class="text-xs text-slate-500">支持 JPG、PNG、GIF、WebP，最大 5MB，建议 1200x400</span>
+            </div>
+            <input type="file" id="background-input" accept="image/*" class="hidden">
+          </div>
+        </section>
+
+        <section class="bg-white rounded-card shadow-sm shadow-green-900/5 p-6 mb-5">
+          <h3 class="text-base font-semibold text-ink mb-4 pb-3 border-b border-slate-200/50">修改密码</h3>
+          <div class="hidden px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-sm mb-4" id="password-success"></div>
+          <div class="hidden px-4 py-2.5 rounded-xl bg-red-50 text-red-600 text-sm mb-4" id="password-error"></div>
+          <form id="password-form">
+            <div class="mb-4">
+              <label class="block text-sm font-semibold mb-1.5">旧密码</label>
+              <input type="password" id="old-password" required autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-none text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-semibold mb-1.5">新密码</label>
+              <input type="password" id="new-password" required minlength="6" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-none text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-semibold mb-1.5">确认新密码</label>
+              <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-none text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            </div>
+            <button type="submit" class="bg-primary text-white rounded-xl px-6 py-2.5 text-sm font-semibold hover:bg-primary-hover transition-all duration-200">更新密码</button>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="text-center py-8 text-sm text-subtle">&copy; 2024 子豪的论坛</div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/announcements.js"></script>
+  <script>
+    function roleText(role) {
+      if (role === 'admin') return '管理员';
+      if (role === 'moderator') return '版主';
+      return '普通用户';
+    }
+
+    function showMessage(id, text) {
+      var el = document.getElementById(id);
+      el.textContent = text;
+      el.classList.remove('hidden');
+      setTimeout(function() { el.classList.add('hidden'); }, 3000);
+    }
+
+    function renderSidebar(user) {
+      document.getElementById('sidebar-avatar').innerHTML = renderAvatar(user, 80);
+      document.getElementById('sidebar-name').textContent = getUserName(user);
+      document.getElementById('sidebar-role').textContent = roleText(user.role);
+      document.getElementById('sidebar-email').textContent = user.email || '';
+
+      var bg = getBackgroundUrl(user);
+      if (bg) {
+        var card = document.querySelector('.profile-sidebar-card');
+        card.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url("' + bg + '")';
+        card.style.backgroundSize = 'cover';
+        card.style.backgroundPosition = 'center';
+        card.style.color = '#fff';
+      }
+    }
+
+    function renderEditPreview(user) {
+      document.getElementById('edit-avatar-wrap').innerHTML = renderAvatar(user, 64);
+      document.getElementById('edit-name').textContent = getUserName(user);
+      document.getElementById('edit-role').textContent = roleText(user.role);
+      document.getElementById('display-name').value = getUserName(user);
+      document.getElementById('profile-email').value = user.email || '';
+
+      // 头像预览
+      document.getElementById('avatar-current').innerHTML = renderAvatar(user, 48);
+
+      // 背景预览
+      var bg = getBackgroundUrl(user);
+      var bgPreview = document.getElementById('bg-preview');
+      if (bg) {
+        bgPreview.style.backgroundImage = 'url("' + bg + '")';
+        bgPreview.innerHTML = '';
+      }
+    }
+
+    async function refreshUser() {
+      var user = await checkAuth();
+      if (!user) {
+        window.location.href = 'login.html?return=' + encodeURIComponent('edit-profile.html');
+        return null;
+      }
+      renderSidebar(user);
+      renderEditPreview(user);
+      return user;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      var user = await checkAuth();
+      if (!user) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      renderSidebar(user);
+      renderEditPreview(user);
+
+      // 保存昵称
+      document.getElementById('profile-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var displayName = document.getElementById('display-name').value.trim();
+        if (!displayName) {
+          showMessage('profile-error', '昵称不能为空');
+          return;
+        }
+        try {
+          await updateCurrentUserProfile({ displayName: displayName });
+          await refreshUser();
+          showMessage('profile-success', '昵称已保存');
+        } catch (err) {
+          showMessage('profile-error', '保存失败: ' + err.message);
+        }
+      });
+
+      // 上传头像
+      document.getElementById('avatar-upload-area').addEventListener('click', function() {
+        document.getElementById('avatar-input').click();
+      });
+
+      document.getElementById('avatar-input').addEventListener('change', async function(e) {
+        var file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+          alert('头像不能超过 2MB');
+          return;
+        }
+        try {
+          await uploadAvatar(file);
+          await refreshUser();
+        } catch (err) {
+          alert('头像上传失败: ' + err.message);
+        }
+      });
+
+      // 上传背景图
+      document.getElementById('bg-upload-area').addEventListener('click', function() {
+        document.getElementById('background-input').click();
+      });
+
+      document.getElementById('background-input').addEventListener('change', async function(e) {
+        var file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          alert('背景图不能超过 5MB');
+          return;
+        }
+        try {
+          await uploadBackground(file);
+          await refreshUser();
+        } catch (err) {
+          alert('背景图上传失败: ' + err.message);
+        }
+      });
+
+      // 修改密码
+      document.getElementById('password-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var oldPassword = document.getElementById('old-password').value;
+        var newPassword = document.getElementById('new-password').value;
+        var confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword.length < 6) {
+          showMessage('password-error', '新密码至少6位');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          showMessage('password-error', '两次输入的新密码不一致');
+          return;
+        }
+
+        try {
+          await apiFetch('/api/users/me/password', {
+            method: 'POST',
+            body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+          });
+          document.getElementById('password-form').reset();
+          showMessage('password-success', '密码已更新');
+        } catch (err) {
+          showMessage('password-error', '修改失败: ' + err.message);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

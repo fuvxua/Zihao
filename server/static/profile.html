@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人主页 - 子豪的论坛</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-sans bg-gradient-to-br from-white via-slate-50 to-green-50 text-ink antialiased min-h-screen">
+
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-none shadow-sm shadow-green-900/5">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-[60px]">
+      <a href="index.html" class="text-lg font-bold text-emerald-800 tracking-tight no-underline">子豪的论坛</a>
+      <ul class="flex items-center gap-1 list-none" id="nav-links"></ul>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 items-start">
+      <!-- 左侧边栏 -->
+      <aside>
+        <div class="bg-gradient-to-br from-slate-800 to-slate-700 rounded-card p-8 text-center text-white shadow-sm" id="sidebar-card">
+          <div class="flex justify-center mb-4" id="sidebar-avatar"></div>
+          <h2 class="text-xl font-bold mb-1" id="sidebar-name">-</h2>
+          <p class="text-sm opacity-85 mb-1" id="sidebar-role">-</p>
+          <p class="text-xs opacity-60 break-all" id="sidebar-email">-</p>
+        </div>
+        <nav class="bg-white rounded-card shadow-sm shadow-green-900/5 mt-4 overflow-hidden divide-y divide-slate-200/50">
+          <a href="profile.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-primary bg-primary-light no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+            我的帖子
+          </a>
+          <a href="edit-profile.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-ink hover:text-primary hover:bg-primary-light transition-colors no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            编辑资料
+          </a>
+          <a href="index.html" class="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-ink hover:text-primary hover:bg-primary-light transition-colors no-underline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            返回首页
+          </a>
+        </nav>
+      </aside>
+
+      <!-- 右侧内容 -->
+      <main>
+        <div class="mb-5">
+          <h1 class="text-xl font-bold text-ink">我的帖子</h1>
+        </div>
+        <div id="my-posts-list">
+          <div class="text-center py-10 text-sm text-subtle">加载中...</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="text-center py-8 text-sm text-subtle">© 2024 子豪的论坛</div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/posts.js"></script>
+  <script src="js/announcements.js"></script>
+  <script>
+    function roleText(role) {
+      if (role === 'admin') return '管理员';
+      if (role === 'moderator') return '版主';
+      return '普通用户';
+    }
+
+    function renderSidebar(user) {
+      document.getElementById('sidebar-avatar').innerHTML = renderAvatar(user, 80);
+      document.getElementById('sidebar-name').textContent = getUserName(user);
+      document.getElementById('sidebar-role').textContent = roleText(user.role);
+      document.getElementById('sidebar-email').textContent = user.email || '';
+      var bg = getBackgroundUrl(user);
+      if (bg) {
+        var card = document.getElementById('sidebar-card');
+        card.style.backgroundImage = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url("' + bg + '")';
+        card.style.backgroundSize = 'cover';
+        card.style.backgroundPosition = 'center';
+      }
+    }
+
+    async function loadMyPosts() {
+      var container = document.getElementById('my-posts-list');
+      try {
+        var user = await checkAuth();
+        if (!user) return;
+        var result = await apiFetch('/api/posts?limit=50');
+        var posts = (result.results || []).filter(function(p) { return p.authorId === user.objectId; });
+        if (posts.length === 0) {
+          container.innerHTML = '<div class="text-center py-16 text-subtle"><p class="mb-4">你还没有发过帖子</p><a href="create.html" class="bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary-hover transition-all no-underline">去发帖</a></div>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < posts.length; i++) {
+          var post = posts[i];
+          html += '<a href="post.html?id=' + post.id + '" class="flex items-center gap-5 px-6 py-4 bg-white rounded-card shadow-sm shadow-green-900/5 mb-3 hover:bg-emerald-50/40 transition-all duration-200 no-underline text-ink">' +
+            '<div class="flex-1 min-w-0"><div class="text-[15px] font-semibold text-slate-800 mb-1">' + escapeHtml(post.title) + '</div>' +
+            '<div class="flex gap-4 text-xs text-subtle"><span>' + formatTime(post.createdAt) + '</span><span>回复 ' + (post.replyCount || 0) + '</span><span>浏览 ' + (post.viewCount || 0) + '</span></div></div></a>';
+        }
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div class="text-center py-10 text-sm text-red-400">加载失败</div>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      var user = await checkAuth();
+      if (!user) { window.location.href = 'login.html?return=' + encodeURIComponent(window.location.href); return; }
+      renderSidebar(user);
+      loadMyPosts();
+    });
+  </script>
+</body>
+</html>
